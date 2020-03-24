@@ -7,7 +7,7 @@ use common\enums\StatusEnum;
 $form = ActiveForm::begin([
     'id' => $model->formName(),
     'enableAjaxValidation' => true,
-    'validationUrl' => Url::to(['ajax-edit', 'id' => $model['id']]),
+    'validationUrl' => Url::to(['ajax-edit', 'id' => $model['id'], 'member_id' => $model['member_id']]),
 ]);
 ?>
     <div class="modal-header">

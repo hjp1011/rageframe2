@@ -2,6 +2,7 @@
 
 namespace services\common;
 
+use common\enums\AppEnum;
 use Yii;
 use yii\helpers\Json;
 use common\models\common\MenuCate;
@@ -9,7 +10,7 @@ use common\helpers\ArrayHelper;
 use common\components\Service;
 use common\models\common\Menu;
 use common\enums\StatusEnum;
-use common\enums\TypeEnum;
+use common\enums\WhetherEnum;
 use common\helpers\StringHelper;
 use common\helpers\Auth;
 use common\helpers\TreeHelper;
@@ -54,13 +55,13 @@ class MenuService extends Service
             $model->attributes = $menu;
             // 增加父级
             !empty($parent) && $model->setParent($parent);
-            $model->url = $menu['route'];
+            $model->url = '/' . StringHelper::toUnderScore($cate->addons_name) . '/'. $menu['route'];
             $model->pid = $pid;
             $model->level = $level;
             $model->cate_id = $cate->id;
             $model->app_id = $cate->app_id;
             $model->addons_name = $cate->addons_name;
-            $model->type = $cate->type;
+            $model->is_addon = $cate->is_addon;
             $model->save();
 
             if (isset($menu['child']) && !empty($menu['child'])) {
@@ -81,7 +82,7 @@ class MenuService extends Service
         $list = Menu::find()
             ->where(['>=', 'status', StatusEnum::DISABLED])
             ->andWhere(['app_id' => $app_id])
-            ->andWhere(['type' => $menuCate->type])
+            ->andWhere(['is_addon' => $menuCate->is_addon])
             ->andFilterWhere(['addons_name' => $menuCate->addons_name])
             ->andFilterWhere(['<>', 'id', $id])
             ->select(['id', 'title', 'pid', 'level'])
@@ -103,19 +104,11 @@ class MenuService extends Service
         $models = $this->findAll();
 
         // 获取权限信息
-        $auth = [];
-        if (!Yii::$app->services->auth->isSuperAdmin()) {
-            $role = Yii::$app->services->authRole->getRole();
-            $auth = Yii::$app->services->authRole->getAllAuthByRole($role);
-        }
-
         foreach ($models as $key => &$model) {
             if (!empty($model['url'])) {
                 $params = Json::decode($model['params']);
                 (empty($params) || !is_array($params)) && $params = [];
-                $model['fullUrl'][] = $model['type'] == TypeEnum::TYPE_ADDONS
-                    ? 'addons/' . StringHelper::toUnderScore($model['addons_name']) . '/' . $model['url']
-                    : $model['url'];
+                $model['fullUrl'][] = $model['url'];
 
                 foreach ($params as $param) {
                     if (!empty($param['key'])) {
@@ -127,14 +120,13 @@ class MenuService extends Service
             }
 
             // 系统菜单校验
-            if ($model['type'] == TypeEnum::TYPE_DEFAULT && Auth::verify($model['url'], $auth) === false) {
+            if ($model['is_addon'] == WhetherEnum::DISABLED && Auth::verify($model['url']) === false) {
                 unset($models[$key]);
             }
 
             // 插件菜单校验
-            if ($model['type'] == TypeEnum::TYPE_ADDONS) {
-                $tmpUrl = $model['addons_name'] . ':' . $model['url'];
-                if (Auth::verify($tmpUrl, $auth) === false) {
+            if ($model['is_addon'] == WhetherEnum::ENABLED) {
+                if (Auth::verify($model['url']) === false) {
                     unset($models[$key]);
                 }
 
@@ -152,7 +144,7 @@ class MenuService extends Service
     {
         $data = Menu::find()->where(['status' => StatusEnum::ENABLED]);
         // 关闭开发模式
-        if (empty(Yii::$app->debris->config('sys_dev', false, 1))) {
+        if (empty(Yii::$app->debris->backendConfig('sys_dev'))) {
             $data = $data->andWhere(['dev' => StatusEnum::DISABLED]);
         }
 

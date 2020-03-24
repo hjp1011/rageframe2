@@ -27,7 +27,7 @@ use merchant\widgets\notify\Notify;
                 </li>
                 <!-- Notifications: style can be found in dropdown.less -->
                 <?php foreach ($menuCates as $cate){ ?>
-                    <li class="dropdown notifications-menu rfTopMenu hide <?php if($cate['is_default_show'] == StatusEnum::ENABLED) echo 'rfTopMenuHover'; ?>" data-type="<?= $cate['id']; ?>" data-is_addon="<?= $cate['is_addon']; ?>">
+                    <li class="dropdown notifications-menu rfTopMenu hide <?php if($cate['is_default_show'] == StatusEnum::ENABLED) echo 'rfTopMenuHover'; ?>" data-type="<?= $cate['id']; ?>" data-addon_centre="<?= $cate['addon_centre']; ?>">
                         <a class="dropdown-toggle">
                             <i class="fa <?= $cate['icon']; ?>"></i> <?= $cate['title']; ?>
                         </a>
@@ -69,10 +69,10 @@ use merchant\widgets\notify\Notify;
                         <li class="user-body">
                             <div class="row">
                                 <div class="col-xs-6 text-center">
-                                    <a href="<?= Url::to(['/base/member/personal']); ?>" class="J_menuItem" onclick="$('body').click();">个人信息</a>
+                                    <a href="<?= Url::to(['/merchants/base/member/personal']); ?>" class="J_menuItem" onclick="$('body').click();">个人信息</a>
                                 </div>
                                 <div class="col-xs-6 text-center">
-                                    <a href="<?= Url::to(['/base/member/up-password']); ?>" class="J_menuItem" onclick="$('body').click();">修改密码</a>
+                                    <a href="<?= Url::to(['/merchants/base/member/up-password']); ?>" class="J_menuItem" onclick="$('body').click();">修改密码</a>
                                 </div>
                             </div>
                             <!-- /.row -->

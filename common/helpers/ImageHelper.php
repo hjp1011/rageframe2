@@ -4,6 +4,7 @@ namespace common\helpers;
 
 use Yii;
 use yii\helpers\Html;
+use yii\helpers\Json;
 
 /**
  * Class ImageHelper
@@ -12,6 +13,18 @@ use yii\helpers\Html;
  */
 class ImageHelper
 {
+    /**
+     * 默认图片
+     *
+     * @param $imgSrc
+     * @param string $defaultImgSre
+     * @return string
+     */
+    public static function default($imgSrc, $defaultImgSre = '/resources/img/error.png')
+    {
+        return !empty($imgSrc) ? $imgSrc : Yii::getAlias('@web') . $defaultImgSre;
+    }
+
     /**
      * 默认头像
      *
@@ -39,6 +52,30 @@ class ImageHelper
         return Html::a($image, $imgSrc, [
             'data-fancybox' => 'gallery'
         ]);
+    }
+
+    /**
+     * 显示图片列表
+     *
+     * @param $covers
+     * @return string
+     */
+    public static function fancyBoxs($covers, $width = 45, $height = 45)
+    {
+        $image = '';
+        if (empty($covers)) {
+            return $image;
+        }
+
+        !is_array($covers) && $covers = Json::decode($covers);
+
+        foreach ($covers as $cover) {
+            $image .= Html::tag('span', self::fancyBox($cover, $width, $height), [
+                'style' => 'padding-right:5px;padding-bottom:5px'
+            ]);
+        }
+
+        return $image;
     }
 
     /**

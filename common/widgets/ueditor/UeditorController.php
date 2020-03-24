@@ -1,6 +1,7 @@
 <?php
 namespace common\widgets\ueditor;
 
+use common\helpers\ResultHelper;
 use Yii;
 use yii\helpers\Url;
 use yii\web\Controller;
@@ -9,7 +10,7 @@ use common\helpers\ArrayHelper;
 use common\helpers\UploadHelper;
 use common\enums\StatusEnum;
 use yii\helpers\Json;
-use addons\RfWechat\common\models\Attachment as WechatAttachment;
+use addons\Wechat\common\models\Attachment as WechatAttachment;
 use League\Flysystem\Adapter\Local;
 use League\Flysystem\Filesystem;
 
@@ -259,10 +260,16 @@ class UeditorController extends Controller
         foreach ($source as $imgUrl) {
             try {
                 $upload->save($upload->verifyUrl($imgUrl));
-                $baseInfo = $upload->getBaseInfo();
+                if ($file = Yii::$app->services->attachment->findByMd5($upload->config['md5'])) {
+                    $url = $file['base_url'];
+                } else {
+                    $baseInfo = $upload->getBaseInfo();
+                    $url = $baseInfo['url'];
+                }
+
                 $list[] = [
                     'state' => 'SUCCESS',
-                    'url' => $baseInfo['url'],
+                    'url' => $url,
                     'source' => $imgUrl
                 ];
             } catch (\Exception $e) {

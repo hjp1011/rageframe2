@@ -6,8 +6,10 @@ use Yii;
 use yii\web\Controller;
 use yii\filters\AccessControl;
 use yii\web\UnauthorizedHttpException;
-use common\components\BaseAction;
+use yii\web\ForbiddenHttpException;
+use common\traits\BaseAction;
 use common\helpers\Auth;
+use common\enums\StatusEnum;
 use common\behaviors\ActionLogBehavior;
 
 /**
@@ -41,8 +43,9 @@ class BaseController extends Controller
     }
 
     /**
-     * @param $action
+     * @param \yii\base\Action $action
      * @return bool
+     * @throws ForbiddenHttpException
      * @throws UnauthorizedHttpException
      * @throws \yii\web\BadRequestHttpException
      */
@@ -51,6 +54,19 @@ class BaseController extends Controller
         if (!parent::beforeAction($action)) {
             return false;
         }
+
+        // 判断商户的有效性
+        if (
+            !($merchant = Yii::$app->services->merchant->findByLogin()) ||
+            $merchant->status == StatusEnum::DELETE ||
+            $merchant->state != StatusEnum::ENABLED
+        ) {
+            Yii::$app->user->logout();
+
+            throw new ForbiddenHttpException('对不起，您还无法登陆请联系管理员');
+        }
+
+        Yii::$app->params['merchant'] = $merchant;
 
         // 每页数量
         $this->pageSize = Yii::$app->request->get('per-page', 10);
@@ -64,7 +80,7 @@ class BaseController extends Controller
         }
         // 开始权限校验
         if (!Auth::verify($permissionName)) {
-            throw new UnauthorizedHttpException('对不起，您现在还没获此操作的权限');
+            throw new ForbiddenHttpException('对不起，您现在还没获此操作的权限');
         }
 
         return true;

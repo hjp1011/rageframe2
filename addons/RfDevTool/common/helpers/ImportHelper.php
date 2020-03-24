@@ -4,11 +4,11 @@ namespace addons\RfDevTool\common\helpers;
 
 use Yii;
 use yii\helpers\Json;
+use yii\web\NotFoundHttpException;
 use common\enums\AppEnum;
 use common\models\common\Provinces;
-use common\models\common\AuthItem;
-use common\enums\TypeEnum;
-use yii\web\NotFoundHttpException;
+use common\models\rbac\AuthItem;
+use common\enums\WhetherEnum;
 
 /**
  * Class ImportHelper
@@ -92,7 +92,7 @@ class ImportHelper
                     'title' => $datum[0],
                     'name' => $datum[1],
                     'app_id' => $app_id,
-                    'type' => TypeEnum::TYPE_DEFAULT,
+                    'is_addon' => WhetherEnum::DISABLED,
                     'pid' => $pid,
                     'sort' => $sortArr[$datum[2]]['id'],
                     'level' => $level,

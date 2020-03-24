@@ -4,7 +4,6 @@ namespace html5\controllers;
 
 use Yii;
 use common\helpers\StringHelper;
-use common\enums\PayEnum;
 use common\helpers\Url;
 
 /**
@@ -65,17 +64,23 @@ class SiteController extends BaseController
     }
 
     /**
-     * 生成微信JSAPI支付的Demo方法 默认禁止外部访问 测试请修改方法类型
+     * 生成微信JSAPI支付的Demo方法
+     *
+     * 默认禁止外部访问
+     * 测试请修改方法类型
+     *
+     * 注意：请开启微信的安全支付路径
+     * 域名/html5/site
      *
      * @return string
+     * @throws \EasyWeChat\Kernel\Exceptions\InvalidArgumentException
      * @throws \EasyWeChat\Kernel\Exceptions\InvalidConfigException
-     * @throws \yii\base\InvalidConfigException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     private function actionWechatPay()
     {
         $totalFee = 100;// 支付金额单位：分
-        $orderSn = time() . StringHelper::randomNum();// 订单号
-        $out_trade_no = Yii::$app->services->pay->getOutTradeNo($totalFee, $orderSn, PayEnum::PAY_TYPE_WECHAT);
+        $out_trade_no = time() . StringHelper::randomNum();
 
         $orderData = [
             'trade_type' => 'JSAPI', // JSAPI，NATIVE，APP...
@@ -89,7 +94,7 @@ class SiteController extends BaseController
 
         $payment = Yii::$app->wechat->payment;
         $result = $payment->order->unify($orderData);
-        if ($result['return_code'] == 'SUCCESS') {
+        if ($result['return_code'] == 'SUCCESS' && $result['result_code'] == 'SUCCESS') {
             $config = $payment->jssdk->sdkConfig($result['prepay_id']);
 
             /**

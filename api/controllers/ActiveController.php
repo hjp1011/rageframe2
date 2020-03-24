@@ -11,7 +11,7 @@ use yii\filters\auth\HttpBearerAuth;
 use yii\filters\auth\HttpHeaderAuth;
 use yii\filters\auth\QueryParamAuth;
 use yii\web\BadRequestHttpException;
-use common\components\BaseAction;
+use common\traits\BaseAction;
 use common\behaviors\ActionLogBehavior;
 use common\behaviors\HttpSignAuth;
 
@@ -50,13 +50,6 @@ class ActiveController extends \yii\rest\ActiveController
     public function behaviors()
     {
         $behaviors = parent::behaviors();
-        // 跨域支持
-        $behaviors['corsFilter'] = [
-            'class' => Cors::class,
-        ];
-
-        // 移除行为的权限验证的优先级
-        unset($behaviors['authenticator']);
 
         // 进行签名验证
         if (Yii::$app->params['user.httpSignValidity'] == true) {
@@ -87,7 +80,7 @@ class ActiveController extends \yii\rest\ActiveController
                  * yii\filters\auth\HttpHeaderAuth::class,
                  */
                 // HttpBasicAuth::class,
-                // HttpBearerAuth::class,
+                HttpBearerAuth::class,
                 HttpHeaderAuth::class,
                 [
                     'class' => QueryParamAuth::class,
@@ -122,6 +115,20 @@ class ActiveController extends \yii\rest\ActiveController
     }
 
     /**
+     * {@inheritdoc}
+     */
+    protected function verbs()
+    {
+        return [
+            'index' => ['GET', 'HEAD', 'OPTIONS'],
+            'view' => ['GET', 'HEAD', 'OPTIONS'],
+            'create' => ['POST', 'OPTIONS'],
+            'update' => ['PUT', 'PATCH', 'OPTIONS'],
+            'delete' => ['DELETE', 'OPTIONS'],
+        ];
+    }
+
+    /**
      * 前置操作验证token有效期和记录日志和检查curd权限
      *
      * @param $action
@@ -132,7 +139,9 @@ class ActiveController extends \yii\rest\ActiveController
      */
     public function beforeAction($action)
     {
-        parent::beforeAction($action);
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
 
         // 权限方法检查，如果用了rbac，请注释掉
         $this->checkAccess($action->id, $this->modelClass, Yii::$app->request->get());

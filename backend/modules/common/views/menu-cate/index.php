@@ -31,10 +31,7 @@ $this->params['breadcrumbs'][] = ['label' => $this->title];
                         //重新定义分页样式
                         'tableOptions' => ['class' => 'table table-hover'],
                         'columns' => [
-                            [
-                                'class' => 'yii\grid\SerialColumn',
-                                'visible' => true, // 不显示#
-                            ],
+                            'id',
                             [
                                 'attribute' => 'title',
                                 'value' => function ($model) {
@@ -70,9 +67,9 @@ $this->params['breadcrumbs'][] = ['label' => $this->title];
                                 'format' => 'raw',
                             ],
                             [
-                                'attribute' => 'is_addon',
+                                'attribute' => 'addon_centre',
                                 'value' => function ($model) {
-                                    return Html::whether($model->is_addon);
+                                    return Html::whether($model->addon_centre);
                                 },
                                 'filter' => false,
                                 'format' => 'raw',

@@ -2,7 +2,6 @@
 
 namespace services\common;
 
-use common\enums\AppEnum;
 use Yii;
 use yii\db\ActiveQuery;
 use yii\helpers\Json;
@@ -10,6 +9,7 @@ use common\enums\StatusEnum;
 use common\models\common\Config;
 use common\components\Service;
 use common\models\common\ConfigValue;
+use common\enums\AppEnum;
 
 /**
  * Class ConfigService
@@ -26,44 +26,50 @@ class ConfigService extends Service
      */
     public function updateAll($app_id, $data)
     {
+        $merchant_id = Yii::$app->services->merchant->getId();
+
         $config = Config::find()
             ->where(['in', 'name', array_keys($data)])
             ->andWhere(['app_id' => $app_id])
-            ->with('value')
+            ->with([
+                'value' => function (ActiveQuery $query) use ($merchant_id, $app_id) {
+                    return $query->andWhere(['app_id' => $app_id])->andFilterWhere(['merchant_id' => $merchant_id]);
+                }
+            ])
             ->all();
 
+        /** @var Config $item */
         foreach ($config as $item) {
             $val = $data[$item['name']] ?? '';
             /** @var ConfigValue $model */
             $model = $item->value ?? new ConfigValue();
             $model->config_id = $item->id;
+            $model->app_id = $item->app_id;
             $model->data = is_array($val) ? Json::encode($val) : $val;
             $model->save();
         }
 
-        Yii::$app->debris->configAll(true);
+        if ($app_id == AppEnum::BACKEND) {
+            Yii::$app->debris->backendConfigAll(true);
+        } else {
+            Yii::$app->debris->merchantConfigAll(true, $merchant_id);
+        }
     }
 
     /**
      * @param int $merchant_id 指定获取的配置信息
      * @return array|\yii\db\ActiveRecord[]
      */
-    public function findAllWithValue($merchant_id)
+    public function findAllWithValue($app_id, $merchant_id)
     {
-        if (!$merchant_id) {
-            // 总后台强制商户 id 为 1 避免拿到错误的配置
-            $merchant_id = Yii::$app->services->merchant->getId();
-            AppEnum::BACKEND == Yii::$app->id && $merchant_id = 1;
-        }
-
-        $app_id = $merchant_id == 1 ? AppEnum::BACKEND : AppEnum::MERCHANT;
-
         return Config::find()
             ->where(['status' => StatusEnum::ENABLED])
             ->andWhere(['app_id' => $app_id])
-            ->with(['value' => function(ActiveQuery $query) use ($merchant_id) {
-                return $query->andWhere(['merchant_id' => $merchant_id]);
-            }])
+            ->with([
+                'value' => function (ActiveQuery $query) use ($merchant_id, $app_id) {
+                    return $query->andWhere(['app_id' => $app_id])->andFilterWhere(['merchant_id' => $merchant_id]);
+                }
+            ])
             ->asArray()
             ->all();
     }

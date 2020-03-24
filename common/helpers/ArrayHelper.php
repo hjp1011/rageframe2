@@ -3,6 +3,7 @@
 namespace common\helpers;
 
 use yii\helpers\BaseArrayHelper;
+use yii\helpers\Json;
 
 /**
  * Class ArrayHelper
@@ -250,6 +251,28 @@ class ArrayHelper extends BaseArrayHelper
     }
 
     /**
+     * 对比2组id，返回存在的id和被删除的id
+     *
+     * @param array $oldIds
+     * @param array $newIds
+     * @return array
+     */
+    public static function comparisonIds(array $oldIds, array $newIds)
+    {
+        $updatedIds = $deleteIds = [];
+
+        foreach ($oldIds as $oldId) {
+            if (in_array($oldId, $newIds)) {
+                $updatedIds[] = $oldId;
+            } else {
+                $deleteIds[] = $oldId;
+            }
+        }
+
+        return [$updatedIds, $deleteIds];
+    }
+
+    /**
      * 获取递归的第一个没有子级的数据
      *
      * @param $array
@@ -334,6 +357,28 @@ class ArrayHelper extends BaseArrayHelper
         }
 
         return $arr;
+    }
+
+    /**
+     * 数组内某字段转数组
+     *
+     * @param array $data
+     * @param string $field
+     * @return array
+     */
+    public static function fieldToArray(array $data, $field = 'covers')
+    {
+        foreach ($data as &$datum) {
+            if (empty($datum[$field])) {
+                $datum[$field] = [];
+            }
+
+            if (!is_array($datum[$field])) {
+                $datum[$field] = Json::decode($datum[$field]);
+            }
+        }
+
+        return $data;
     }
 
     /**

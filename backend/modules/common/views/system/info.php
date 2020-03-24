@@ -1,7 +1,12 @@
 <?php
 
+use common\helpers\RegularHelper;
+
 $this->title = '系统信息';
 $this->params['breadcrumbs'][] = ['label' =>  $this->title];
+
+$prefix = !RegularHelper::verify('url', Yii::getAlias('@attachurl')) ? Yii::$app->request->hostInfo : '';
+
 ?>
 
 <div class="row">
@@ -30,7 +35,7 @@ $this->params['breadcrumbs'][] = ['label' =>  $this->title];
                     </tr>
                     <tr>
                         <td>附件目录</td>
-                        <td><?= Yii::$app->request->hostInfo . Yii::getAlias('@attachurl'); ?>/</td>
+                        <td><?= $prefix . Yii::getAlias('@attachurl'); ?>/</td>
                     </tr>
                     <tr>
                         <td>附件目录大小</td>
@@ -56,19 +61,19 @@ $this->params['breadcrumbs'][] = ['label' =>  $this->title];
             <div class="box-body table-responsive">
                 <table class="table table-hover">
                     <tr>
-                        <td width="150px">系统全称</td>
+                        <td>系统全称</td>
                         <td><?= Yii::$app->params['exploitFullName']; ?></td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td>为二次开发而生，让开发变得更简单。</td>
+                        <td>重量级全栖框架，为二次开发而生。</td>
                     </tr>
                     <tr>
                         <td>系统版本</td>
                         <td><?= Yii::$app->version; ?></td>
                     </tr>
                     <tr>
-                        <td width="150px">Yii2版本</td>
+                        <td>Yii2版本</td>
                         <td><?= Yii::getVersion(); ?><?php if (YII_DEBUG) echo ' (开发模式)'; ?></td>
                     </tr>
                     <tr>

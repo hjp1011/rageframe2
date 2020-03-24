@@ -4,7 +4,7 @@ namespace backend\modules\member\controllers;
 
 use Yii;
 use common\enums\StatusEnum;
-use common\components\Curd;
+use common\traits\MerchantCurd;
 use common\models\member\Auth;
 use common\models\base\SearchModel;
 use backend\controllers\BaseController;
@@ -16,7 +16,7 @@ use backend\controllers\BaseController;
  */
 class AuthController extends BaseController
 {
-    use Curd;
+    use MerchantCurd;
 
     /**
      * @var \yii\db\ActiveRecord
@@ -45,7 +45,8 @@ class AuthController extends BaseController
             ->search(Yii::$app->request->queryParams);
         $dataProvider->query
             ->andWhere(['>=', 'status', StatusEnum::DISABLED])
-            ->andWhere(['>', 'member_id', 0]);
+            ->andWhere(['>', 'member_id', 0])
+            ->andFilterWhere(['merchant_id' => $this->getMerchantId()]);
 
         return $this->render($this->action->id, [
             'dataProvider' => $dataProvider,

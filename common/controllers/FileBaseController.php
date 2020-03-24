@@ -11,7 +11,6 @@ use common\helpers\ArrayHelper;
 use common\helpers\UploadHelper;
 use common\helpers\ResultHelper;
 use common\models\common\Attachment;
-use common\helpers\StringHelper;
 
 /**
  * Class FileBaseController
@@ -26,21 +25,6 @@ class FileBaseController extends Controller
      * @var bool
      */
     public $enableCsrfValidation = false;
-
-    /**
-     * @var int
-     */
-    protected $fileStart;
-
-    /**
-     * @var int
-     */
-    protected $fileEnd;
-
-    /**
-     * @var int
-     */
-    protected $fileNum = 0;
 
     /**
      * @var \League\Flysystem\Adapter\Local

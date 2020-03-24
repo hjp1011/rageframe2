@@ -3,12 +3,13 @@
 namespace addons\RfHelpers;
 
 use addons\RfHelpers\common\components\Bootstrap;
+use common\components\BaseAddonConfig;
 
 /**
  * Class Addon
  * @package addons\RfHelpers
  */
-class AddonConfig
+class AddonConfig extends BaseAddonConfig
 {
     /**
      * 基础信息
@@ -69,15 +70,6 @@ class AddonConfig
      * @var bool
      */
     public $isRule = false;
-
-    /**
-    * 商户路由映射
-    *
-    * 开启后无需再去商户应用端去开发程序，直接映射后台应用的控制器方法过去，菜单权限还需要单独配置
-    *
-    * @var bool
-    */
-    public $isMerchantRouteMap = false;
 
     /**
      * 类别

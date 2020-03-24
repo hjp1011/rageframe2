@@ -3,6 +3,8 @@
 namespace services\merchant;
 
 use common\components\Service;
+use common\enums\StatusEnum;
+use common\models\merchant\Merchant;
 
 /**
  * 商户
@@ -32,5 +34,44 @@ class MerchantService extends Service
     public function setId($merchant_id)
     {
         $this->merchant_id = $merchant_id;
+    }
+
+    /**
+     * @param $merchant_id
+     */
+    public function addId($merchant_id)
+    {
+        !$this->merchant_id && $this->merchant_id = $merchant_id;
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getCount()
+    {
+        return Merchant::find()
+            ->select('id')
+            ->where(['>=', 'status', StatusEnum::DISABLED])
+            ->andWhere(['state' => StatusEnum::ENABLED])
+            ->count();
+    }
+
+    /**
+     * @return array|\yii\db\ActiveRecord|null
+     */
+    public function findByLogin()
+    {
+        return $this->findById($this->getId());
+    }
+
+    /**
+     * @return array|\yii\db\ActiveRecord|null
+     */
+    public function findById($id)
+    {
+        return Merchant::find()
+            ->where(['>=', 'status', StatusEnum::DISABLED])
+            ->andWhere(['id' => $id])
+            ->one();
     }
 }
